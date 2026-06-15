@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>نبض | أخبار لحظية</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#000000;
+    --paper:#FFFFFF;
+    --crimson:#C9A227;
+    --gold:#FFD700;
+    --slate:#4A4A4A;
+    --line:#000000;
+    --card:#FFFFFF;
+    --radius:14px;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html,body{
+    margin:0; padding:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Cairo',sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  h1,h2,h3,.brand,.article-title{
+    font-family:'Tajawal',sans-serif;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; }
+  img{ max-width:100%; display:block; }
+
+  /* ===== Header ===== */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:var(--ink);
+    color:var(--paper);
+    padding:14px 18px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 2px 12px rgba(0,0,0,.12);
+  }
+  .brand{
+    font-size:22px; font-weight:900; letter-spacing:.5px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .brand .dot{
+    width:9px; height:9px; border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 0 0 rgba(255,215,0,.6);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(255,215,0,.55); }
+    70%{ box-shadow:0 0 0 8px rgba(255,215,0,0); }
+    100%{ box-shadow:0 0 0 0 rgba(255,215,0,0); }
+  }
+
+  .auth-area{ display:flex; align-items:center; gap:10px; }
+
+  #loginBtn{
+    background:var(--gold); color:var(--ink);
+    font-weight:700; font-size:14px;
+    padding:9px 18px; border-radius:999px;
+    display:flex; align-items:center; gap:8px;
+    transition:filter .15s;
+  }
+  #loginBtn:active{ filter:brightness(.92); }
+
+  #userInfo{
+    display:none; align-items:center; gap:8px;
+    font-size:14px;
+  }
+  .user-avatar{
+    width:34px; height:34px; border-radius:50%;
+    border:2px solid var(--gold); object-fit:cover;
+  }
+  #userInfo button{
+    color:var(--paper); opacity:.65; font-size:13px;
+    border:1px solid rgba(247,244,236,.25);
+    padding:5px 12px; border-radius:999px;
+  }
+  #userInfo button:active{ opacity:1; }
+  #userInfo .uname{ display:none; }
+  @media(min-width:480px){ #userInfo .uname{ display:inline; } }
+
+  /* Browser warning banner for WebView */
+  #webviewBanner{
+    display:none;
+    background:#000000; color:var(--gold);
+    border-bottom:2px solid var(--gold);
+    padding:10px 16px; font-size:13px; text-align:center;
+    line-height:1.6;
+  }
+  #webviewBanner button{
+    color:var(--gold); font-weight:700; text-decoration:underline;
+  }
+
+  /* ===== Layout ===== */
+  main{ max-width:680px; margin:0 auto; padding:18px 14px 60px; }
+
+  .feed-title{
+    font-size:13px; color:var(--slate); letter-spacing:2px;
+    text-transform:uppercase; margin:6px 4px 14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .feed-title::after{
+    content:''; flex:1; height:1px; background:var(--line);
+  }
+
+  /* ===== Article Card ===== */
+  .article{
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:22px;
+    overflow:hidden;
+  }
+  .article-cover{
+    width:100%; aspect-ratio:16/9; object-fit:cover;
+    background:var(--line);
+  }
+  .article-body{ padding:18px; }
+  .article-tag{
+    display:inline-block;
+    font-size:11px; font-weight:700; color:#000000;
+    background:var(--gold);
+    padding:3px 10px; border-radius:999px;
+    letter-spacing:1px; margin-bottom:10px;
+  }
+  .article-title{
+    font-size:19px; font-weight:700; line-height:1.5;
+    margin:0 0 8px;
+  }
+  .article-excerpt{
+    font-size:14.5px; color:#2b2b2b; line-height:1.9;
+    margin:0 0 14px;
+  }
+  .article-meta{
+    font-size:12px; color:var(--slate);
+    margin-bottom:14px;
+  }
+
+  /* ===== Actions row ===== */
+  .actions{
+    display:flex; align-items:center; gap:16px;
+    border-top:1px solid var(--line);
+    padding-top:12px;
+  }
+  .like-btn{
+    display:flex; align-items:center; gap:7px;
+    font-size:14px; font-weight:600; color:var(--slate);
+    padding:6px 4px; transition:color .15s;
+  }
+  .like-btn svg{ width:22px; height:22px; transition:transform .2s; }
+  .like-btn.liked{ color:var(--crimson); }
+  .like-btn.liked svg{ fill:var(--crimson); transform:scale(1.12); }
+  .like-btn:active svg{ transform:scale(.85); }
+  .like-btn svg path{ transition:fill .15s; }
+
+  .likers-link{
+    font-size:12.5px; color:var(--gold); font-weight:700;
+    border-bottom:1px dashed var(--gold);
+  }
+
+  .comment-toggle{
+    font-size:14px; font-weight:600; color:var(--slate);
+    display:flex; align-items:center; gap:7px; margin-right:auto;
+  }
+  .comment-toggle svg{ width:21px; height:21px; }
+
+  /* ===== Comments ===== */
+  .comments-section{
+    border-top:1px solid var(--line);
+    padding:14px 18px 18px;
+    display:none;
+  }
+  .comments-section.open{ display:block; }
+
+  .comment-input-row{
+    display:flex; gap:8px; margin-bottom:14px;
+  }
+  .comment-input-row input{
+    flex:1; border:2px solid var(--line); border-radius:999px;
+    padding:10px 16px; font-size:14px; font-family:inherit;
+    background:var(--paper); color:var(--ink);
+  }
+  .comment-input-row input:focus{ outline:2px solid var(--gold); }
+  .comment-input-row button{
+    background:var(--ink); color:var(--paper);
+    border-radius:999px; padding:10px 18px; font-size:13px; font-weight:700;
+    white-space:nowrap;
+  }
+  .comment-input-row button:active{ opacity:.85; }
+
+  .comment{
+    padding:12px 0; border-bottom:1px solid var(--line);
+  }
+  .comment:last-child{ border-bottom:none; }
+  .comment-header{
+    display:flex; align-items:center; gap:8px; margin-bottom:6px;
+  }
+  .avatar{ width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--line); }
+  .avatar-sm{ width:24px; height:24px; border-radius:50%; object-fit:cover; background:var(--line); }
+  .comment-header strong{ font-size:13.5px; font-weight:700; }
+  .comment-time{ font-size:11px; color:var(--slate); margin-right:auto; }
+  .comment p{ font-size:14px; line-height:1.7; margin:0 0 6px; padding-right:38px; }
+
+  .comment-actions{ padding-right:38px; display:flex; gap:14px; }
+  .comment-actions button{
+    font-size:12.5px; color:var(--slate); font-weight:700;
+  }
+  .comment-actions button:active{ color:var(--crimson); }
+
+  .reply-box{
+    display:none; gap:8px; margin:10px 0 0; padding-right:38px;
+  }
+  .reply-box.open{ display:flex; }
+  .reply-box input{
+    flex:1; border:2px solid var(--line); border-radius:999px;
+    padding:8px 14px; font-size:13px; font-family:inherit;
+    background:var(--paper); color:var(--ink);
+  }
+  .reply-box input:focus{ outline:2px solid var(--gold); }
+  .reply-box button{
+    background:var(--crimson); color:#fff; border-radius:999px;
+    padding:8px 14px; font-size:12px; font-weight:700;
+  }
+
+  .replies-list{ padding-right:38px; margin-top:8px; }
+  .reply{
+    display:flex; align-items:flex-start; gap:8px;
+    font-size:13px; padding:7px 0;
+  }
+  .reply strong{ font-size:13px; font-weight:700; flex-shrink:0; }
+  .reply span{ color:#2b2b2b; line-height:1.6; }
+
+  .empty-note{
+    text-align:center; color:var(--slate); font-size:13px; padding:14px 0;
+  }
+
+  /* ===== Likers Page (modal) ===== */
+  .likers-overlay{
+    display:none; position:fixed; inset:0; z-index:100;
+    background:rgba(0,0,0,.6);
+    align-items:flex-end; justify-content:center;
+  }
+  .likers-overlay.open{ display:flex; }
+  .likers-sheet{
+    background:var(--card); width:100%; max-width:680px;
+    border-radius:18px 18px 0 0;
+    max-height:70vh; overflow-y:auto;
+    animation:slideUp .25s ease-out;
+    padding:18px;
+  }
+  @keyframes slideUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+  .likers-sheet h3{
+    margin:0 0 14px; font-size:16px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .likers-sheet h3 button{ font-size:20px; color:var(--slate); }
+  .liker-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 0; border-bottom:1px solid var(--line);
+    font-size:14px; font-weight:600;
+  }
+  .liker-item:last-child{ border-bottom:none; }
+
+  /* Toast */
+  #toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper);
+    padding:11px 22px; border-radius:999px; font-size:13.5px;
+    opacity:0; transition:opacity .25s, transform .25s;
+    z-index:200; pointer-events:none; white-space:nowrap;
+  }
+  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="webviewBanner">
+  يبدو أنك تستخدم متصفحًا داخليًا (واتساب/فيسبوك). لتسجيل الدخول بحساب جوجل، يرجى
+  <button onclick="openInExternalBrowser()">فتح الصفحة في المتصفح</button>
+</div>
+
+<header>
+  <div class="brand"><span class="dot"></span> نبض</div>
+  <div class="auth-area">
+    <button id="loginBtn" onclick="loginWithGoogle()">
+      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5h-1.9V20.5H24v7.4h11.3c-1.6 4.6-5.9 7.9-11.3 7.9-6.9 0-12.5-5.6-12.5-12.5S17.1 10.8 24 10.8c3.2 0 6.1 1.2 8.3 3.2l5.6-5.6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 18.9 12.5 24 12.5c3.2 0 6.1 1.2 8.3 3.2l5.6-5.6C34.6 6.5 29.6 4.5 24 4.5c-8.1 0-15 4.6-18.4 11.3z"/><path fill="#4CAF50" d="M24 43.5c5.5 0 10.4-2.1 14.2-5.7l-6.5-5.4c-1.9 1.4-4.4 2.3-7.7 2.3-5.4 0-10-3.4-11.6-8.1l-6.6 5.1C9.1 38.9 16 43.5 24 43.5z"/><path fill="#1976D2" d="M43.6 20.5h-1.9V20.5H24v7.4h11.3c-.8 2.3-2.2 4.3-4.1 5.7l6.5 5.4C41.5 35.9 45 30.4 45 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+      تسجيل الدخول
+    </button>
+    <div id="userInfo">
+      <img class="user-avatar" id="navAvatar" src="" alt="">
+      <span class="uname" id="navName"></span>
+      <button onclick="logout()">خروج</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="feed-title">آخر الأخبار</div>
+  <div id="articlesContainer"></div>
+</main>
+
+<!-- Likers bottom sheet -->
+<div class="likers-overlay" id="likersOverlay" onclick="if(event.target===this) closeLikers()">
+  <div class="likers-sheet">
+    <h3>الأشخاص المتفاعلون <button onclick="closeLikers()">✕</button></h3>
+    <div id="likersContainer"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ============ Firebase SDK v8 ============ -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+/* =========================================================
+   FIREBASE CONFIG
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyALL-f1tJ2rj8aQCT7MPj-W15B9gwkyp-s",
+  authDomain: "idousalhnews.firebaseapp.com",
+  databaseURL: "https://idousalhnews-default-rtdb.firebaseio.com",
+  projectId: "idousalhnews",
+  storageBucket: "idousalhnews.firebasestorage.app",
+  messagingSenderId: "469195341199",
+  appId: "1:469195341199:web:63e9a787c94f6c77ab9ffa",
+  measurementId: "G-0K8B0VYZNQ"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+/* =========================================================
+   DEMO ARTICLES (seeded once into Realtime Database)
+   ========================================================= */
+const demoArticles = {
+  "art1": {
+    title: "إطلاق مشروع \"نبض\" لتجربة أخبار تفاعلية لحظية",
+    excerpt: "انطلقت اليوم النسخة الأولى من منصة نبض، التي تتيح للمستخدمين التفاعل مع الأخبار عبر الإعجابات والتعليقات والردود بشكل لحظي ومتزامن بين جميع المستخدمين عبر Firebase.",
+    cover: "https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=1200&auto=format&fit=crop",
+    tag: "تقنية",
+    time: "منذ 3 ساعات"
+  },
+  "art2": {
+    title: "كيف تغيّر قواعد البيانات اللحظية طريقة تفاعلنا مع المحتوى؟",
+    excerpt: "أصبحت قواعد البيانات اللحظية مثل Firebase Realtime Database عنصرًا أساسيًا في تطبيقات التواصل الحديثة، فهي تتيح مزامنة فورية للبيانات بين جميع الأجهزة دون الحاجة لتحديث الصفحة.",
+    cover: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop",
+    tag: "تحليل",
+    time: "منذ 6 ساعات"
+  },
+  "art3": {
+    title: "نصائح لتجربة تسجيل دخول أكثر سلاسة عبر الهاتف",
+    excerpt: "تواجه تطبيقات الويب على الهاتف تحديات خاصة عند استخدام تسجيل الدخول بحساب جوجل، خصوصًا داخل المتصفحات المدمجة في تطبيقات التواصل الاجتماعي، وهنا أهم الحلول العملية لذلك.",
+    cover: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1200&auto=format&fit=crop",
+    tag: "نصائح",
+    time: "منذ يوم واحد"
+  }
+};
+
+/* Seed demo articles only if they don't already exist (won't overwrite likes/comments) */
+function seedDemoArticles() {
+  Object.keys(demoArticles).forEach((id) => {
+    const ref = db.ref(`articles/${id}/meta`);
+    ref.once('value').then((snap) => {
+      if (!snap.exists()) {
+        ref.set(demoArticles[id]);
+      }
+    });
+  });
+}
+
+/* =========================================================
+   UTIL
+   ========================================================= */
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return 'الآن';
+  if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+  if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+  return `منذ ${Math.floor(diff / 86400)} يوم`;
+}
+
+/* =========================================================
+   WEBVIEW DETECTION (Facebook / Instagram / WhatsApp in-app browsers)
+   ========================================================= */
+function isInAppBrowser() {
+  const ua = navigator.userAgent || '';
+  return /FBAN|FBAV|Instagram|Line\/|WhatsApp|MicroMessenger/i.test(ua);
+}
+
+function openInExternalBrowser() {
+  // Attempts to open current URL in the system default browser
+  window.open(window.location.href, '_blank');
+  showToast('إذا لم يفتح المتصفح تلقائيًا، الصق الرابط في كروم أو سفاري');
+}
+
+if (isInAppBrowser()) {
+  document.getElementById('webviewBanner').style.display = 'block';
+}
+
+/* =========================================================
+   AUTHENTICATION (Google - signInWithRedirect)
+   ========================================================= */
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+function loginWithGoogle() {
+  if (isInAppBrowser()) {
+    showToast('افتح الصفحة في متصفح خارجي لتسجيل الدخول');
+    return;
+  }
+  auth.signInWithRedirect(googleProvider);
+}
+
+function logout() {
+  auth.signOut();
+}
+
+// Handle the redirect result on page load
+auth.getRedirectResult()
+  .then((result) => {
+    if (result && result.user) {
+      saveUserProfile(result.user);
+      showToast('تم تسجيل الدخول بنجاح');
+    }
+  })
+  .catch((error) => {
+    console.error('Auth redirect error:', error.code, error.message);
+    if (error.code !== 'auth/no-auth-event') {
+      showToast('حدث خطأ في تسجيل الدخول: ' + error.code);
+    }
+  });
+
+// Persistent auth state listener
+auth.onAuthStateChanged((user) => {
+  const loginBtn = document.getElementById('loginBtn');
+  const userInfo = document.getElementById('userInfo');
+
+  if (user) {
+    loginBtn.style.display = 'none';
+    userInfo.style.display = 'flex';
+    document.getElementById('navAvatar').src = user.photoURL || '';
+    document.getElementById('navName').textContent = user.displayName || 'مستخدم';
+    saveUserProfile(user);
+  } else {
+    loginBtn.style.display = 'flex';
+    userInfo.style.display = 'none';
+  }
+
+  // Re-render like buttons to reflect current user's like state
+  refreshAllLikeButtons();
+});
+
+function saveUserProfile(user) {
+  db.ref('users/' + user.uid).set({
+    name: user.displayName || 'مستخدم',
+    email: user.email || '',
+    photo: user.photoURL || ''
+  });
+}
+
+/* =========================================================
+   RENDER ARTICLES (static shell, populated once)
+   ========================================================= */
+const container = document.getElementById('articlesContainer');
+
+function renderArticleShell(id, meta) {
+  const article = document.createElement('article');
+  article.className = 'article';
+  article.id = `article-${id}`;
+  article.innerHTML = `
+    <img class="article-cover" src="${meta.cover || ''}" alt="" loading="lazy">
+    <div class="article-body">
+      <span class="article-tag">${escapeHTML(meta.tag || 'أخبار')}</span>
+      <h2 class="article-title">${escapeHTML(meta.title)}</h2>
+      <p class="article-excerpt">${escapeHTML(meta.excerpt || '')}</p>
+      <div class="article-meta">${escapeHTML(meta.time || '')}</div>
+
+      <div class="actions">
+        <button class="like-btn" id="likeBtn-${id}" onclick="toggleLike('${id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <span id="likeCount-${id}">0</span>
+        </button>
+
+        <button class="likers-link" id="likersLink-${id}" onclick="openLikers('${id}')" style="display:none">
+          عرض المتفاعلين
+        </button>
+
+        <button class="comment-toggle" onclick="toggleComments('${id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          <span id="commentCount-${id}">0</span> تعليق
+        </button>
+      </div>
+
+      <div class="comments-section" id="commentsSection-${id}">
+        <div class="comment-input-row">
+          <input type="text" id="commentInput-${id}" placeholder="اكتب تعليقًا...">
+          <button onclick="addComment('${id}')">نشر</button>
+        </div>
+        <div id="commentsList-${id}"></div>
+        <div class="empty-note" id="emptyComments-${id}" style="display:none">لا توجد تعليقات بعد. كن أول من يعلّق!</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(article);
+}
+
+/* =========================================================
+   LOAD ARTICLES FROM DATABASE (real-time)
+   ========================================================= */
+const loadedArticles = new Set();
+
+db.ref('articles').on('child_added', (snapshot) => {
+  const id = snapshot.key;
+  if (loadedArticles.has(id)) return;
+  loadedArticles.add(id);
+
+  const data = snapshot.val();
+  const meta = (data && data.meta) || demoArticles[id] || { title: 'مقال بدون عنوان', excerpt: '' };
+
+  renderArticleShell(id, meta);
+  listenToLikes(id);
+  listenToComments(id);
+  toggleComments.initialized = toggleComments.initialized || {};
+});
+
+/* Seed demo data after attaching the listener (so child_added fires for them) */
+seedDemoArticles();
+
+/* =========================================================
+   LIKES (real-time sync, no duplicate listeners)
+   ========================================================= */
+const likeListeners = {};
+
+function listenToLikes(articleId) {
+  if (likeListeners[articleId]) return; // prevent duplicate registration
+
+  const ref = db.ref(`articles/${articleId}/likes`);
+  const callback = (snapshot) => {
+    const likes = snapshot.val() || {};
+    const count = Object.keys(likes).length;
+
+    const countEl = document.getElementById(`likeCount-${articleId}`);
+    if (countEl) countEl.textContent = count;
+
+    const likersLink = document.getElementById(`likersLink-${articleId}`);
+    if (likersLink) likersLink.style.display = count > 0 ? 'inline-block' : 'none';
+
+    updateLikeButtonState(articleId, likes);
+  };
+
+  ref.on('value', callback);
+  likeListeners[articleId] = { ref, callback };
+}
+
+function updateLikeButtonState(articleId, likesSnapshotVal) {
+  const user = auth.currentUser;
+  const likeBtn = document.getElementById(`likeBtn-${articleId}`);
+  if (!likeBtn) return;
+
+  if (user && likesSnapshotVal && likesSnapshotVal[user.uid]) {
+    likeBtn.classList.add('liked');
+  } else {
+    likeBtn.classList.remove('liked');
+  }
+}
+
+function refreshAllLikeButtons() {
+  Object.keys(likeListeners).forEach((articleId) => {
+    db.ref(`articles/${articleId}/likes`).once('value').then((snap) => {
+      updateLikeButtonState(articleId, snap.val() || {});
+    });
+  });
+}
+
+function toggleLike(articleId) {
+  const user = auth.currentUser;
+  if (!user) {
+    showToast('سجّل الدخول أولًا للإعجاب بالمقال');
+    return;
+  }
+
+  const likeRef = db.ref(`articles/${articleId}/likes/${user.uid}`);
+  likeRef.once('value').then((snap) => {
+    if (snap.exists()) {
+      likeRef.remove();
+    } else {
+      likeRef.set({
+        name: user.displayName || 'مستخدم',
+        photo: user.photoURL || '',
+        time: firebase.database.ServerValue.TIMESTAMP
+      });
+    }
+  }).catch((err) => {
+    console.error('Like error:', err);
+    showToast('تعذر تسجيل الإعجاب، حاول مرة أخرى');
+  });
+}
+
+/* =========================================================
+   LIKERS BOTTOM SHEET
+   ========================================================= */
+let likersListenerRef = null;
+
+function openLikers(articleId) {
+  const overlay = document.getElementById('likersOverlay');
+  const list = document.getElementById('likersContainer');
+  overlay.classList.add('open');
+  list.innerHTML = '<p class="empty-note">جاري التحميل...</p>';
+
+  if (likersListenerRef) likersListenerRef.off();
+
+  likersListenerRef = db.ref(`articles/${articleId}/likes`);
+  likersListenerRef.on('value', (snapshot) => {
+    const likes = snapshot.val();
+    list.innerHTML = '';
+
+    if (!likes) {
+      list.innerHTML = '<p class="empty-note">لا يوجد إعجابات حتى الآن</p>';
+      return;
+    }
+
+    Object.values(likes)
+      .sort((a, b) => (b.time || 0) - (a.time || 0))
+      .forEach((u) => {
+        const div = document.createElement('div');
+        div.className = 'liker-item';
+        div.innerHTML = `
+          <img class="avatar" src="${u.photo || ''}" alt="">
+          <span>${escapeHTML(u.name || 'مستخدم')}</span>
+        `;
+        list.appendChild(div);
+      });
+  });
+}
+
+function closeLikers() {
+  document.getElementById('likersOverlay').classList.remove('open');
+  if (likersListenerRef) {
+    likersListenerRef.off();
+    likersListenerRef = null;
+  }
+}
+
+/* =========================================================
+   COMMENTS + REPLIES (real-time, duplicate-safe)
+   ========================================================= */
+const commentListeners = {};
+const replyListeners = {};
+
+function toggleComments(articleId) {
+  const section = document.getElementById(`commentsSection-${articleId}`);
+  section.classList.toggle('open');
+}
+
+function listenToComments(articleId) {
+  if (commentListeners[articleId]) return; // prevent duplicate registration
+
+  const ref = db.ref(`articles/${articleId}/comments`);
+  const listEl = document.getElementById(`commentsList-${articleId}`);
+  const emptyEl = document.getElementById(`emptyComments-${articleId}`);
+  const countEl = document.getElementById(`commentCount-${articleId}`);
+  const rendered = new Set();
+
+  function updateCountAndEmpty() {
+    countEl.textContent = rendered.size;
+    emptyEl.style.display = rendered.size === 0 ? 'block' : 'none';
+  }
+
+  const onAdd = (snapshot) => {
+    const id = snapshot.key;
+    if (rendered.has(id)) return;
+    rendered.add(id);
+    renderComment(articleId, id, snapshot.val(), listEl);
+    updateCountAndEmpty();
+  };
+
+  const onRemove = (snapshot) => {
+    const el = document.getElementById(`comment-${snapshot.key}`);
+    if (el) el.remove();
+    rendered.delete(snapshot.key);
+    updateCountAndEmpty();
+  };
+
+  const onChange = (snapshot) => {
+    const textEl = document.getElementById(`comment-text-${snapshot.key}`);
+    if (textEl) textEl.textContent = (snapshot.val() && snapshot.val().text) || '';
+  };
+
+  ref.on('child_added', onAdd);
+  ref.on('child_removed', onRemove);
+  ref.on('child_changed', onChange);
+
+  commentListeners[articleId] = { ref, onAdd, onRemove, onChange };
+  updateCountAndEmpty();
+}
+
+function renderComment(articleId, commentId, data, container) {
+  const div = document.createElement('div');
+  div.className = 'comment';
+  div.id = `comment-${commentId}`;
+  div.innerHTML = `
+    <div class="comment-header">
+      <img class="avatar" src="${data.photo || ''}" alt="">
+      <strong>${escapeHTML(data.name || 'مستخدم')}</strong>
+      <span class="comment-time">${timeAgo(data.time)}</span>
+    </div>
+    <p id="comment-text-${commentId}">${escapeHTML(data.text)}</p>
+    <div class="comment-actions">
+      <button onclick="toggleReplyBox('${commentId}')">رد</button>
+    </div>
+    <div class="reply-box" id="replyBox-${commentId}">
+      <input type="text" id="replyInput-${commentId}" placeholder="اكتب ردك...">
+      <button onclick="addReply('${articleId}','${commentId}')">إرسال</button>
+    </div>
+    <div class="replies-list" id="repliesList-${commentId}"></div>
+  `;
+  container.appendChild(div);
+  listenToReplies(articleId, commentId);
+}
+
+function toggleReplyBox(commentId) {
+  const user = auth.currentUser;
+  if (!user) {
+    showToast('سجّل الدخول أولًا للرد');
+    return;
+  }
+  document.getElementById(`replyBox-${commentId}`).classList.toggle('open');
+}
+
+function addComment(articleId) {
+  const user = auth.currentUser;
+  if (!user) {
+    showToast('سجّل الدخول أولًا لإضافة تعليق');
+    return;
+  }
+
+  const input = document.getElementById(`commentInput-${articleId}`);
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.disabled = true;
+  db.ref(`articles/${articleId}/comments`).push({
+    uid: user.uid,
+    name: user.displayName || 'مستخدم',
+    photo: user.photoURL || '',
+    text: text,
+    time: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    input.value = '';
+  }).catch((err) => {
+    console.error('Comment error:', err);
+    showToast('تعذر نشر التعليق، حاول مرة أخرى');
+  }).finally(() => {
+    input.disabled = false;
+  });
+}
+
+function listenToReplies(articleId, commentId) {
+  if (replyListeners[commentId]) return; // prevent duplicate registration
+
+  const ref = db.ref(`articles/${articleId}/comments/${commentId}/replies`);
+  const listEl = document.getElementById(`repliesList-${commentId}`);
+  const rendered = new Set();
+
+  const onAdd = (snapshot) => {
+    const id = snapshot.key;
+    if (rendered.has(id)) return;
+    rendered.add(id);
+
+    const data = snapshot.val();
+    const div = document.createElement('div');
+    div.className = 'reply';
+    div.id = `reply-${id}`;
+    div.innerHTML = `
+      <img class="avatar-sm" src="${data.photo || ''}" alt="">
+      <strong>${escapeHTML(data.name || 'مستخدم')}</strong>
+      <span>${escapeHTML(data.text)}</span>
+    `;
+    listEl.appendChild(div);
+  };
+
+  ref.on('child_added', onAdd);
+  replyListeners[commentId] = { ref, onAdd };
+}
+
+function addReply(articleId, commentId) {
+  const user = auth.currentUser;
+  if (!user) {
+    showToast('سجّل الدخول أولًا للرد');
+    return;
+  }
+
+  const input = document.getElementById(`replyInput-${commentId}`);
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.disabled = true;
+  db.ref(`articles/${articleId}/comments/${commentId}/replies`).push({
+    uid: user.uid,
+    name: user.displayName || 'مستخدم',
+    photo: user.photoURL || '',
+    text: text,
+    time: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    input.value = '';
+    document.getElementById(`replyBox-${commentId}`).classList.remove('open');
+  }).catch((err) => {
+    console.error('Reply error:', err);
+    showToast('تعذر نشر الرد، حاول مرة أخرى');
+  }).finally(() => {
+    input.disabled = false;
+  });
+}
+
+/* =========================================================
+   CLEANUP LISTENERS ON PAGE EXIT (important for mobile)
+   ========================================================= */
+window.addEventListener('beforeunload', () => {
+  Object.values(likeListeners).forEach(({ ref, callback }) => ref.off('value', callback));
+  Object.values(commentListeners).forEach(({ ref, onAdd, onRemove, onChange }) => {
+    ref.off('child_added', onAdd);
+    ref.off('child_removed', onRemove);
+    ref.off('child_changed', onChange);
+  });
+  Object.values(replyListeners).forEach(({ ref, onAdd }) => ref.off('child_added', onAdd));
+  if (likersListenerRef) likersListenerRef.off();
+});
+</script>
+</body>
+</html>
